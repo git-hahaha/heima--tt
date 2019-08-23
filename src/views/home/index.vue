@@ -47,20 +47,22 @@
             <el-header>
                 <span @click="toggleAside" class="icon el-icon-s-fold"></span>
                 <span class="text">江苏传智播客科技教育有限公司</span>
-                <el-dropdown class="my-dropdown">
+                <el-dropdown class="my-dropdown" @command="clickItem">
                     <span class="el-dropdown-link">
-                        <img class="avatar" src="../../assets/images/avatar.jpg" alt="">
-                        <span class="name">用户名称</span>
+                        <img class="avatar" :src="photo" alt="">
+                        <span class="name">{{name}}</span>
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>个人设置</el-dropdown-item>
-                        <el-dropdown-item>退出登录</el-dropdown-item>
+                        <!-- <el-dropdown-item icon="el-icon-setting" @click.native="setting()">个人设置</el-dropdown-item>
+                        <el-dropdown-item icon="el-icon-unlock" @click.native="logout()">退出登录</el-dropdown-item> -->
+                        <el-dropdown-item icon="el-icon-setting" command="setting">个人设置</el-dropdown-item>
+                        <el-dropdown-item icon="el-icon-unlock" command="logout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </el-header>
             <el-main>
-                <!-- 渲染耳机路由 -->
+                <!-- 渲染二级路由 -->
                 <router-view></router-view>
             </el-main>
         </el-container>
@@ -69,16 +71,48 @@
 </template>
 
 <script>
+import store from '@/store'
 export default {
   data () {
     return {
-      isCollapse: false
+      isCollapse: false,
+      name: '',
+      photo: ''
     }
+  },
+  created () {
+    const user = store.getUser()
+    this.name = user.name
+    this.photo = user.photo
   },
   methods: {
     // 切换状态
     toggleAside () {
       this.isCollapse = !this.isCollapse
+    },
+    // 绑定的是 click 事件 原生的DOM支持的事件
+    // el-dropdown-item 组件 是否支持 click 事件 看element组建的文档
+    // 怎么给组件绑定原生的事件
+    // 按键修饰符 @keyup.enter  按下 enter键后触发的事件
+    // 事件修饰符：@click.stop 阻止事件冒泡
+    // 事件修饰符：@click.native 给组件绑定原生的事件
+    clickItem (command) {
+      // 判断值 setting 还是 logout
+      // 如果 command === setting 调用 this.setting()
+      // 如果 command === logout 调用 this.logout()
+      // 意思 ： const o = {a:10, b:20} 等价 o.a === o['a']
+      this[command]()
+    },
+    // 个人设置
+    setting () {
+      this.$router.push('/setting')
+    },
+    // 退出登录
+    logout () {
+      // 删除本地用户信息
+      store.delUser()
+      // 跳转页面
+      this.$router.push('/login')
     }
   }
 }
