@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import store from '@/store'
 export default {
 //   mounted () {
 //     // 渲染完毕
@@ -60,16 +61,33 @@ export default {
   methods: {
     login () {
       // 调用 validate 对整体表进行校验
-      this.$refs.loginForm.validate((valid) => {
+      this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
-          this.$http.post('http://ttapi.research.itcast.cn/mp/v1_0/authorizations', this.loginForm)
-            .then(res => {
-              // 跳转成功
-              this.$router.push('/')
-            })
-            .catch(() => {
-              this.$message.error('手机号或验证码错误')
-            })
+          // this.$http.post('http://ttapi.research.itcast.cn/mp/v1_0/authorizations', this.loginForm)
+          //   .then(res => {
+          //     // 跳转成功
+          //     // 操作用户 信息 就是操作store
+          //     store.setUser(res.data.data)
+          //     this.$router.push('/')
+          //   })
+          //   .catch(() => {
+          //      // 失败 提示
+          //     this.$message.error('手机号或验证码错误')
+          //   })
+
+          // 获取登录成功后的信息  用户信息数据 res = {data: {data: '用户信息', message: '提示'}}
+          // 当数据获取失败 提示错误信息
+          // js基础语法 怎么去捕获异常 (报错)
+          // try{//可能报错的代码}catch(exception){//获取到异常报错(处理异常)}
+          // await 获取promise的成功结果 失败使用try{}catch(e){}进行处理
+          try {
+            const { data: { data } } = await this.$http.post('authorizations', this.loginForm)
+            store.setUser(data)
+            this.$router.push('/')
+          } catch (e) {
+            // 进行错误提示即可
+            this.$message.error('手机号或验证码错误')
+          }
         }
       })
     }
